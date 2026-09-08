@@ -1,0 +1,47 @@
+# Reglas sobre el pull request en sí: título convencional, tamaño y plantilla completa.
+name: Pull request
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pull-request:
+    name: Pull request
+    runs-on: ubuntu-latest
+    env:
+      TITULO: ${{ github.event.pull_request.title }}
+      CUERPO: ${{ github.event.pull_request.body }}
+      BASE: ${{ github.event.pull_request.base.sha }}
+      HEAD: ${{ github.event.pull_request.head.sha }}
+      AVISO_LINEAS: '400'
+      MAX_LINEAS: '1500'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Título con formato convencional
+        run: ./scripts/validar-mensaje.sh <<<"$TITULO"
+
+      - name: Plantilla completa
+        run: |
+          faltan=0
+          for seccion in "## Qué cambia" "## Por qué" "## Cómo probarlo"; do
+            grep -qF "$seccion" <<<"$CUERPO" || { echo "::error::Falta la sección '$seccion'"; faltan=1; }
+          done
+          exit $faltan
+
+      - name: Tamaño del diff
+        run: |
+          lineas=$(git diff --numstat "$BASE" "$HEAD" | awk '{ s += $1 + $2 } END { print s + 0 }')
+          echo "Líneas cambiadas: $lineas"
+          if [ "$lineas" -gt "$MAX_LINEAS" ]; then
+            echo "::error::$lineas líneas cambiadas (máximo $MAX_LINEAS). Dividir el pull request."; exit 1
+          elif [ "$lineas" -gt "$AVISO_LINEAS" ]; then
+            echo "::warning::$lineas líneas cambiadas (orientativo: $AVISO_LINEAS). Explicar en la descripción por qué no se dividió."
+          fi

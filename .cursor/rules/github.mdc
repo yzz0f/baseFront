@@ -1,0 +1,31 @@
+---
+description: Cómo nombrar ramas, escribir commits y describir pull requests. Usar al preparar commits o abrir un pull request.
+globs:
+alwaysApply: false
+---
+
+# Ramas, commits y pull requests
+
+## Ramas
+`<tipo>/<identificador-opcional>-<descripcion-corta>` en minúsculas con guiones. Tipos: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `hotfix`. Ejemplo: `feat/123-exportar-reportes`.
+
+## Commits
+```
+<tipo>(<ámbito opcional>): <descripción en imperativo, minúscula, sin punto, ≤72 caracteres>
+
+<cuerpo opcional: qué cambia y por qué>
+
+<pie opcional: Refs, BREAKING CHANGE, Co-authored-by>
+```
+Tipos: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+Un commit por cambio lógico. Un cambio incompatible lleva `!` tras el tipo o `BREAKING CHANGE:` en el pie.
+
+## Pull request
+- Título con el mismo formato que un commit: será el mensaje final del squash.
+- Descripción según `.github/PULL_REQUEST_TEMPLATE.md`: qué cambia, por qué, cómo probarlo, riesgos.
+- Una intención por pull request. Orientativamente menos de 400 líneas cambiadas.
+- Si una parte significativa fue generada con IA, se declara en la plantilla.
+
+## Al responder una revisión
+- Cambios en commits nuevos, sin reescribir la historia de la rama.
+- Responder cada comentario. No cerrar hilos ajenos sin responder.

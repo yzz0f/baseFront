@@ -1,0 +1,29 @@
+---
+description: Lineamientos transversales del equipo. Aplican a todo el código, en cualquier lenguaje.
+globs:
+alwaysApply: true
+---
+
+# Lineamientos del equipo
+
+El contrato completo está en `AGENTS.md`; los documentos en `docs/`. Si el archivo que editas pertenece a un lenguaje con módulo en `lenguajes/<nombre>/`, su regla específica también aplica.
+
+## Al escribir código
+- Lee el módulo afectado y sus pruebas antes de proponer cambios. Usa las librerías que el repositorio ya tiene.
+- Cambios mínimos: sólo lo que pide la tarea. Lo demás se anota para otro pull request.
+- Respeta las convenciones del repositorio aunque difieran de las tuyas.
+- Nombres descriptivos. Funciones cortas con una responsabilidad.
+- Errores explícitos: nunca atrapar y descartar en silencio.
+- Entradas externas validadas en el borde del sistema.
+- Configuración por variables de entorno, documentadas en `.env.example`. Nunca secretos en el código.
+- Sin código muerto, sin código comentado, sin `TODO` sin tarea.
+
+## Pruebas
+- Todo comportamiento nuevo o corregido lleva prueba, con nombre que describa el comportamiento.
+- Deterministas: sin esperas reales, sin dependencia del orden, sin aleatoriedad sin semilla.
+- No borres ni omitas pruebas que fallan. Arregla la causa.
+
+## Verificación
+- `./scripts/check.sh` es la verificación oficial. Ejecútalo antes de dar por terminada una tarea y reporta el resultado real.
+- No desactives reglas del linter ni cambies la configuración de verificación para que un check pase. Una supresión puntual lleva justificación al lado.
+- No edites a mano archivos generados ni archivos de bloqueo de dependencias.

@@ -1,0 +1,15 @@
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Secretos y entorno local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Cada módulo de lenguaje agrega sus propios patrones en lenguajes/<nombre>/gitignore

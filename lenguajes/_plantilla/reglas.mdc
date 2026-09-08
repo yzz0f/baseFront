@@ -1,0 +1,17 @@
+---
+description: Convenciones para NOMBRE. Resumen de lenguajes/NOMBRE/GUIA.md.
+globs: ["**/*.EXTENSION"]
+alwaysApply: false
+---
+
+# NOMBRE
+
+Guía completa: `lenguajes/NOMBRE/GUIA.md`. Verificación: `lenguajes/NOMBRE/check.sh`.
+
+<!-- Instrucciones cortas para el asistente. Lo que necesita para no cometer los errores típicos del lenguaje:
+- Formateador y linter que se usan; no desactivar reglas sin justificación.
+- Convenciones de nombres y estructura.
+- Cómo se manejan los errores.
+- Cómo se escriben las pruebas y con qué ejecutor.
+- Prácticas prohibidas.
+-->

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Valida el formato del mensaje de commit. Instalar con ./scripts/instalar-hooks.sh
+exec "$(git rev-parse --show-toplevel)/scripts/validar-mensaje.sh" "$1"

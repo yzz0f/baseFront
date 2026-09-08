@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Ejecuta la verificación antes de subir cambios. Saltar con: git push --no-verify (sólo en emergencias).
+exec "$(git rev-parse --show-toplevel)/scripts/check.sh"
