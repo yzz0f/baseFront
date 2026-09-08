@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Reportar vulnerabilidad
+    url: https://github.com/yzz0f/baseFront/security/advisories/new
+    about: No abras un issue público para problemas de seguridad.
+  - name: Proponer cambio a un lineamiento
+    url: https://github.com/yzz0f/baseFront/discussions
+    about: Abrí una discusión antes de un PR si el cambio afecta cómo escribimos código.

@@ -1,0 +1,21 @@
+---
+description: Convenciones para Python.
+globs: ["**/*.py", "**/pyproject.toml"]
+alwaysApply: false
+---
+
+# Python
+
+Lineamiento completo: `docs/lineamientos/lenguajes/python.md`. Config base: `templates/python/pyproject.toml`.
+
+- Python ≥ 3.11. Type hints en toda función pública; `mypy` en modo estricto para código nuevo.
+- Formato y lint: `ruff format` y `ruff check` (reemplazan black, isort, flake8). No desactivar reglas sin `# noqa: XXX  # motivo`.
+- Estructura `src/<paquete>/` con `pyproject.toml`; nada de `setup.py` nuevo.
+- Gestión de dependencias con `uv` (o `poetry` si el repo ya lo usa). Lockfile siempre commiteado.
+- `dataclasses` o `pydantic` para datos estructurados; no diccionarios sueltos cruzando fronteras de módulo.
+- Excepciones específicas. Nunca `except Exception:` sin re-lanzar ni `except: pass`. Definí jerarquía propia (`class AppError(Exception)`).
+- `pathlib` sobre `os.path`; `logging` (o `structlog`) sobre `print`.
+- Nombres: `snake_case` funciones/variables, `PascalCase` clases, `UPPER_SNAKE` constantes. Módulos cortos y en minúscula.
+- f-strings para formateo; nunca concatenación para SQL: usar parámetros del driver/ORM.
+- Tests con `pytest` en `tests/`, fixtures en `conftest.py`, nombres `test_<comportamiento>`. Sin `unittest.TestCase` nuevo.
+- Sin `import *`. Imports ordenados por ruff (stdlib, terceros, locales).

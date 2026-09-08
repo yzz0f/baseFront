@@ -1,0 +1,14 @@
+# Los dueños se piden automáticamente como reviewers.
+# Reemplazar @yzz0f/platform por el equipo o usuarios reales.
+# Sintaxis: https://docs.github.com/articles/about-code-owners
+
+# Todo el harness
+*                         @yzz0f
+
+# Lineamientos y automatización requieren revisión de plataforma
+/docs/lineamientos/       @yzz0f
+/docs/adr/                @yzz0f
+/.github/                 @yzz0f
+/.cursor/                 @yzz0f
+/.pre-commit-config.yaml  @yzz0f
+/scripts/                 @yzz0f

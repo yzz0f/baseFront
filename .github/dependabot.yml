@@ -1,0 +1,47 @@
+# Dependabot: actualizaciones semanales agrupadas por ecosistema.
+# Las entradas comentadas con un prefijo `# lang:<x>:` las habilita
+# ./scripts/bootstrap.sh --lang <x> cuando el repo tiene ese manifiesto.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+# lang:ts:  - package-ecosystem: npm
+# lang:ts:    directory: /
+# lang:ts:    schedule:
+# lang:ts:      interval: weekly
+# lang:ts:    groups:
+# lang:ts:      minor-y-patch:
+# lang:ts:        update-types: [minor, patch]
+
+# lang:python:  - package-ecosystem: pip
+# lang:python:    directory: /
+# lang:python:    schedule:
+# lang:python:      interval: weekly
+# lang:python:    groups:
+# lang:python:      minor-y-patch:
+# lang:python:        update-types: [minor, patch]
+
+# lang:go:  - package-ecosystem: gomod
+# lang:go:    directory: /
+# lang:go:    schedule:
+# lang:go:      interval: weekly
+
+# lang:java:  - package-ecosystem: gradle
+# lang:java:    directory: /
+# lang:java:    schedule:
+# lang:java:      interval: weekly
+# lang:java:  - package-ecosystem: maven
+# lang:java:    directory: /
+# lang:java:    schedule:
+# lang:java:      interval: weekly
+
+# lang:csharp:  - package-ecosystem: nuget
+# lang:csharp:    directory: /
+# lang:csharp:    schedule:
+# lang:csharp:      interval: weekly

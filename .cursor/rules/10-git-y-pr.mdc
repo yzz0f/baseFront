@@ -1,0 +1,31 @@
+---
+description: Cómo escribir commits, ramas y descripciones de PR. Usar al preparar commits o abrir PRs.
+globs:
+alwaysApply: false
+---
+
+# Git, commits y pull requests
+
+## Ramas
+Formato: `<tipo>/<TICKET>-<descripcion-kebab>`. Ejemplos: `feat/PAY-231-retry-webhooks`, `fix/APP-98-null-en-login`.
+Tipos válidos: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `hotfix`, `release`.
+
+## Commits (Conventional Commits)
+```
+<tipo>(<scope opcional>): <descripción imperativa, minúscula, sin punto, ≤72 chars>
+
+<cuerpo opcional: qué y por qué, no cómo. Líneas ≤100 chars>
+
+<footer opcional: Refs: PAY-231 | BREAKING CHANGE: ... | Co-authored-by: ...>
+```
+Tipos: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+- Un commit = un cambio lógico. Si el mensaje necesita "y", probablemente son dos commits.
+- `feat` y `fix` disparan versión (minor/patch). `BREAKING CHANGE:` en footer o `!` tras el tipo dispara major.
+
+## Descripción del PR
+Seguí `.github/PULL_REQUEST_TEMPLATE.md` completo. El título es el mensaje del squash commit: debe cumplir Conventional Commits.
+Incluí siempre: contexto/por qué, qué cambia, cómo probarlo, riesgos y rollback, y si se usó IA para generar partes significativas.
+
+## Al responder review
+- Cada comentario se responde o se resuelve con un commit. No hagas `resolve` de un hilo ajeno sin responder.
+- Los cambios pedidos van en commits nuevos (no amend) para que el reviewer vea el diff incremental.

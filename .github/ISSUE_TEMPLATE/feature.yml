@@ -1,0 +1,33 @@
+name: Mejora o funcionalidad
+description: Proponer algo nuevo o cambiar algo existente
+title: "feat: "
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Problema que resuelve
+      description: Qué necesidad hay hoy y a quién afecta. Describí el problema, no la solución.
+    validations:
+      required: true
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta
+      description: Cómo lo resolverías. Alternativas consideradas.
+    validations:
+      required: true
+  - type: textarea
+    id: alcance
+    attributes:
+      label: Alcance y criterios de aceptación
+      placeholder: |
+        - [ ] Dado ..., cuando ..., entonces ...
+  - type: dropdown
+    id: impacto
+    attributes:
+      label: Impacto
+      options:
+        - Bajo (un módulo)
+        - Medio (varios módulos / un servicio)
+        - Alto (arquitectura, API pública, datos) → requiere ADR

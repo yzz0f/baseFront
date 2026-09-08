@@ -1,0 +1,193 @@
+# CI reutilizable y multi-lenguaje.
+# Detecta qué lenguajes hay en el repo y ejecuta lint + formato + tests sólo para esos.
+# Otros repos pueden invocarlo con:
+#   jobs:
+#     harness:
+#       uses: yzz0f/baseFront/.github/workflows/ci.yml@main
+name: CI
+
+on:
+  workflow_call:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    name: Detectar lenguajes
+    runs-on: ubuntu-latest
+    outputs:
+      node: ${{ steps.d.outputs.node }}
+      python: ${{ steps.d.outputs.python }}
+      go: ${{ steps.d.outputs.go }}
+      java: ${{ steps.d.outputs.java }}
+      dotnet: ${{ steps.d.outputs.dotnet }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: d
+        shell: bash
+        run: |
+          has() { [ -n "$(git ls-files -- "$@" | head -n1)" ] && echo true || echo false; }
+          {
+            echo "node=$(has 'package.json' '*/package.json')"
+            echo "python=$(has 'pyproject.toml' '*/pyproject.toml' 'requirements*.txt')"
+            echo "go=$(has 'go.mod' '*/go.mod')"
+            echo "java=$(has 'pom.xml' '*/pom.xml' 'build.gradle' 'build.gradle.kts' '*/build.gradle' '*/build.gradle.kts')"
+            echo "dotnet=$(has '*.sln' '*.csproj')"
+          } | tee -a "$GITHUB_OUTPUT"
+
+  hooks:
+    name: pre-commit (genéricos)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: pre-commit/action@v3.0.1
+        env:
+          # Los hooks de lenguaje corren en su propio job con el toolchain adecuado.
+          SKIP: prettier,eslint,ruff,ruff-format,mypy,golangci-lint,hadolint-docker,commitlint,no-commit-to-branch
+        with:
+          extra_args: --all-files
+
+  node:
+    name: JavaScript / TypeScript
+    needs: detect
+    if: needs.detect.outputs.node == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detectar gestor de paquetes
+        id: pm
+        shell: bash
+        run: |
+          if [ -f pnpm-lock.yaml ]; then echo "name=pnpm" >> "$GITHUB_OUTPUT"; echo "install=pnpm install --frozen-lockfile" >> "$GITHUB_OUTPUT"
+          elif [ -f yarn.lock ]; then echo "name=yarn" >> "$GITHUB_OUTPUT"; echo "install=yarn install --immutable" >> "$GITHUB_OUTPUT"
+          else echo "name=npm" >> "$GITHUB_OUTPUT"; echo "install=npm ci" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.pm.outputs.name == 'pnpm'
+        uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ hashFiles('.nvmrc') != '' && '.nvmrc' || 'package.json' }}
+          cache: ${{ steps.pm.outputs.name }}
+      - run: ${{ steps.pm.outputs.install }}
+      - name: Lint, typecheck, test, build (si existen los scripts)
+        shell: bash
+        run: |
+          run_if() { node -e "process.exit(require('./package.json').scripts?.['$1'] ? 0 : 1)" && ${{ steps.pm.outputs.name }} run "$1" || echo "::notice::script '$1' no definido, se omite"; }
+          run_if lint
+          run_if format:check
+          run_if typecheck
+          run_if test
+          run_if build
+
+  python:
+    name: Python
+    needs: detect
+    if: needs.detect.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: ${{ hashFiles('.python-version') != '' && '.python-version' || 'pyproject.toml' }}
+      - name: Instalar dependencias
+        shell: bash
+        run: |
+          if [ -f uv.lock ]; then uv sync --all-extras --dev
+          elif [ -f pyproject.toml ]; then uv pip install --system -e '.[dev]' || uv pip install --system -e .
+          elif [ -f requirements.txt ]; then uv pip install --system -r requirements.txt; fi
+          uv pip install --system ruff mypy pytest pytest-cov
+      - name: Ruff (lint + formato)
+        run: |
+          ruff check --output-format=github .
+          ruff format --check .
+      - name: mypy
+        run: mypy . || (echo "::warning::mypy reportó errores" && exit 1)
+      - name: pytest
+        shell: bash
+        run: |
+          if [ -d tests ] || ls test_*.py >/dev/null 2>&1; then pytest --cov --cov-report=term-missing -q
+          else echo "::notice::sin tests, se omite pytest"; fi
+
+  go:
+    name: Go
+    needs: detect
+    if: needs.detect.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Formato (gofmt)
+        run: test -z "$(gofmt -l . | tee /dev/stderr)"
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.62
+      - run: go vet ./...
+      - run: go test -race -cover ./...
+
+  java:
+    name: Java / Kotlin
+    needs: detect
+    if: needs.detect.outputs.java == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: ${{ hashFiles('**/pom.xml') != '' && 'maven' || 'gradle' }}
+      - name: Build + tests
+        shell: bash
+        run: |
+          if [ -x ./gradlew ]; then ./gradlew --no-daemon spotlessCheck check
+          elif [ -x ./mvnw ]; then ./mvnw -B -ntp spotless:check verify
+          else mvn -B -ntp spotless:check verify; fi
+
+  dotnet:
+    name: C# / .NET
+    needs: detect
+    if: needs.detect.outputs.dotnet == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          # Si el repo tiene global.json, setup-dotnet lo respeta automáticamente.
+          dotnet-version: '8.0.x'
+      - run: dotnet restore
+      - run: dotnet format --verify-no-changes --no-restore
+      - run: dotnet build --no-restore -warnaserror --configuration Release
+      - run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
+
+  # Job final para usar como único "required check" en branch protection.
+  resultado:
+    name: CI OK
+    if: always()
+    needs: [detect, hooks, node, python, go, java, dotnet]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar resultados
+        shell: bash
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS" | jq .
+          if echo "$RESULTS" | jq -e 'to_entries[] | select(.value.result == "failure" or .value.result == "cancelled")' >/dev/null; then
+            echo "::error::Al menos un job falló"; exit 1
+          fi

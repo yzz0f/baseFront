@@ -1,0 +1,81 @@
+# Seguridad: secretos en el historial, dependencias vulnerables y análisis estático.
+name: Seguridad
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'   # lunes 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Secretos (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Necesaria sólo para organizaciones: https://gitleaks.io
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  dependencias:
+    name: Revisión de dependencias
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          deny-licenses: GPL-3.0, AGPL-3.0, SSPL-1.0
+          comment-summary-in-pr: on-failure
+
+  detect:
+    name: Lenguajes para CodeQL
+    runs-on: ubuntu-latest
+    outputs:
+      languages: ${{ steps.d.outputs.languages }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: d
+        shell: bash
+        run: |
+          has() { [ -n "$(git ls-files -- "$@" | head -n1)" ]; }
+          langs=()
+          has '*.js' '*.jsx' '*.ts' '*.tsx' '*.mjs' '*.cjs' && langs+=('"javascript-typescript"')
+          has '*.py' && langs+=('"python"')
+          has '*.go' && langs+=('"go"')
+          has '*.java' '*.kt' && langs+=('"java-kotlin"')
+          has '*.cs' && langs+=('"csharp"')
+          json="[$(IFS=,; echo "${langs[*]}")]"
+          echo "languages=$json" | tee -a "$GITHUB_OUTPUT"
+
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    needs: detect
+    if: needs.detect.outputs.languages != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJSON(needs.detect.outputs.languages) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+      - uses: github/codeql-action/autobuild@v3
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:${{ matrix.language }}

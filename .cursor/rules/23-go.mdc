@@ -1,0 +1,21 @@
+---
+description: Convenciones para Go.
+globs: ["**/*.go", "**/go.mod"]
+alwaysApply: false
+---
+
+# Go
+
+Lineamiento completo: `docs/lineamientos/lenguajes/go.md`. Config base: `templates/go/.golangci.yml`.
+
+- Go estable más reciente en `go.mod`. `gofmt`/`goimports` obligatorio; lint con `golangci-lint`.
+- Layout: `cmd/<binario>/main.go`, `internal/` para código no exportable, `pkg/` sólo si realmente se consume desde afuera.
+- Errores: siempre se revisan. Envolvé con contexto `fmt.Errorf("leer config: %w", err)`; comparaciones con `errors.Is`/`errors.As`. Nunca `_ = err` ni `panic` fuera de `main`/init irrecuperable.
+- Aceptá interfaces, devolvé structs. Interfaces pequeñas definidas en el paquete consumidor.
+- `context.Context` como primer parámetro de toda función que hace I/O; propagalo, no lo guardes en structs.
+- Concurrencia: cada goroutine tiene dueño y forma de terminar (`context`, `errgroup`, `WaitGroup`). Sin goroutines "fire and forget".
+- Nombres cortos y en `camelCase`/`PascalCase`; siglas en mayúscula (`userID`, `HTTPClient`). Paquetes en minúscula, singular, sin guiones bajos.
+- Sin variables globales mutables; inyectar dependencias por constructor `NewX(...)`.
+- Logging estructurado con `log/slog`. Sin `fmt.Println` en producción.
+- Tests: tabla (`tests := []struct{...}`), `t.Run` por caso, `t.Parallel()` donde sea seguro, `testify` sólo si el repo ya lo usa. Tests de integración con build tag o `testcontainers-go`.
+- Sin `init()` con side effects. Sin `reflect` ni `unsafe` salvo justificación escrita.

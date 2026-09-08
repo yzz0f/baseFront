@@ -1,0 +1,14 @@
+{
+  "_comment": "Scripts que la CI del harness ejecuta si existen. Copiar al package.json del repo.",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "build": "vite build"
+  },
+  "engines": { "node": ">=22" }
+}

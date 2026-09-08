@@ -1,0 +1,84 @@
+# Calidad del PR: título convencional, tamaño razonable, plantilla completa.
+name: Calidad de PR
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  titulo:
+    name: Título en Conventional Commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            El asunto "{subject}" debe empezar en minúscula y estar en imperativo.
+            Ej: "feat(auth): permitir login con magic link"
+
+  tamano:
+    name: Tamaño del diff
+    runs-on: ubuntu-latest
+    env:
+      WARN_LINES: '400'
+      MAX_LINES: '1500'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Contar líneas cambiadas (sin lockfiles ni generados)
+        shell: bash
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          lines=$(git diff --numstat "$BASE" "$HEAD" -- . \
+            ':(exclude)**/package-lock.json' ':(exclude)**/pnpm-lock.yaml' ':(exclude)**/yarn.lock' \
+            ':(exclude)**/poetry.lock' ':(exclude)**/uv.lock' ':(exclude)**/go.sum' \
+            ':(exclude)**/*.generated.*' ':(exclude)**/*.snap' \
+            | awk '{ a += $1; d += $2 } END { print a + d + 0 }')
+          echo "Líneas cambiadas: $lines"
+          echo "### Tamaño del PR: $lines líneas" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$lines" -gt "$MAX_LINES" ]; then
+            echo "::error::El PR cambia $lines líneas (> $MAX_LINES). Dividilo en PRs más chicos."; exit 1
+          elif [ "$lines" -gt "$WARN_LINES" ]; then
+            echo "::warning::El PR cambia $lines líneas (> $WARN_LINES). Considerá dividirlo; explicá en la descripción por qué no."
+          fi
+
+  plantilla:
+    name: Plantilla completa
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar secciones obligatorias
+        shell: bash
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          faltan=0
+          for seccion in "## Qué cambia" "## Por qué" "## Cómo probarlo"; do
+            if ! grep -qF "$seccion" <<<"$BODY"; then echo "::error::Falta la sección '$seccion' en la descripción"; faltan=1; fi
+          done
+          if grep -qE '^\s*<!--.*-->\s*$' <<<"$BODY" && [ "$(sed -e 's/<!--.*-->//g' <<<"$BODY" | grep -cvE '^\s*(#|-|$)')" -lt 3 ]; then
+            echo "::error::La descripción sólo tiene los comentarios de la plantilla. Completala."; faltan=1
+          fi
+          exit $faltan

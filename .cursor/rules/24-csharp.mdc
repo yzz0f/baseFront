@@ -1,0 +1,22 @@
+---
+description: Convenciones para C# / .NET.
+globs: ["**/*.cs", "**/*.csproj", "**/*.sln", "**/Directory.Build.props"]
+alwaysApply: false
+---
+
+# C# / .NET
+
+Lineamiento completo: `docs/lineamientos/lenguajes/csharp.md`. Config base: `templates/csharp/`.
+
+- .NET LTS vigente (8 o superior). `Nullable` y `ImplicitUsings` habilitados; `TreatWarningsAsErrors` en `Directory.Build.props`.
+- Formato con `dotnet format` según `.editorconfig`; analizadores Roslyn en nivel `Recommended`.
+- Nombres: `PascalCase` para tipos, métodos, propiedades y constantes; `camelCase` para locales y parámetros; `_camelCase` para campos privados; interfaces con `I` (`IOrderRepository`). Métodos async terminan en `Async`.
+- Un tipo público por archivo, con el mismo nombre. Namespaces file-scoped (`namespace X;`).
+- Inmutabilidad: `record` para DTOs y value objects, `init` en propiedades, `IReadOnlyList<T>` en APIs públicas.
+- Inyección de dependencias por constructor con el contenedor de .NET. Sin `new` de servicios ni service locator.
+- Async/await hasta el final; nunca `.Result` ni `.Wait()`. Pasá `CancellationToken` en toda operación de I/O.
+- Excepciones específicas; no atrapar `Exception` salvo en middleware global. Nunca `catch {}` vacío ni `throw ex;` (usar `throw;`).
+- LINQ para transformar colecciones; evitá múltiples enumeraciones (`ToList()` una vez si se recorre varias veces).
+- Logging con `ILogger<T>` y plantillas estructuradas (`_logger.LogInformation("Order {OrderId} created", id)`), nunca interpolación.
+- Tests: xUnit + FluentAssertions + NSubstitute (o Moq si el repo ya lo usa). Nombres `Metodo_Escenario_ResultadoEsperado`.
+- Paquetes NuGet con versión fija en `Directory.Packages.props` (central package management).

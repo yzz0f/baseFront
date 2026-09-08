@@ -1,0 +1,20 @@
+---
+description: Cómo escribir y organizar tests en cualquier lenguaje. Usar al crear o modificar tests.
+globs: ["**/*test*", "**/*spec*", "**/tests/**", "**/__tests__/**", "**/*Tests.cs", "**/*Test.java", "**/*Test.kt"]
+alwaysApply: false
+---
+
+# Testing
+
+Lineamiento completo: `docs/lineamientos/04-testing.md`.
+
+- Pirámide: muchos unitarios rápidos, algunos de integración, pocos end-to-end. Los tests unitarios no tocan red, disco ni reloj real.
+- Estructura AAA (Arrange / Act / Assert) o Given/When/Then, separada visualmente. Un concepto por test; varias aserciones sólo si prueban el mismo resultado.
+- Nombre = comportamiento esperado, no método probado: `rechaza_pago_si_saldo_insuficiente`, no `test_pagar`.
+- Determinismo: sin `sleep`, sin dependencia de orden, sin datos aleatorios sin semilla. Inyectá reloj y generadores.
+- Dobles de prueba: preferí fakes simples a mocks complejos. Mockeá sólo fronteras (HTTP, DB, colas). No mockees lo que estás probando.
+- Datos de prueba mediante builders/factories con valores por defecto; el test sólo destaca lo relevante.
+- Cubrí el caso feliz, los bordes y al menos un caso de error por función pública.
+- Un bug corregido lleva primero un test que lo reproduce (rojo) y luego el fix (verde).
+- Nunca marques `skip`/`xfail`/`@Disabled` sin ticket y fecha en el comentario.
+- Cobertura: umbral mínimo del repo (por defecto 80 % en líneas nuevas). Es un piso, no un objetivo: no escribas tests que sólo ejecutan código sin afirmar nada.

@@ -1,0 +1,94 @@
+# Config base de Python. Ajustar name/version/dependencies del proyecto.
+[project]
+name = "mi-paquete"
+version = "0.1.0"
+description = ""
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8,<9",
+  "pytest-cov>=5,<7",
+  "mypy>=1.13,<2",
+  "ruff>=0.8,<1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mi_paquete"]
+
+# ---------- Ruff: formato + lint ----------
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "E", "W",    # pycodestyle
+  "F",         # pyflakes
+  "I",         # isort
+  "UP",        # pyupgrade
+  "B",         # bugbear
+  "SIM",       # simplify
+  "C4",        # comprehensions
+  "N",         # pep8-naming
+  "S",         # bandit (seguridad)
+  "T20",       # sin print
+  "PT",        # pytest style
+  "RUF",       # reglas propias de ruff
+  "ARG",       # argumentos sin usar
+  "ERA",       # código comentado
+  "PL",        # pylint (subconjunto)
+  "TRY",       # manejo de excepciones
+]
+ignore = [
+  "PLR0913",   # demasiados argumentos: lo decide el review
+  "TRY003",    # mensajes largos en excepciones
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "ARG", "PLR2004", "S106"]   # assert, fixtures sin usar, números mágicos, passwords ficticias
+"scripts/**" = ["T20"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["mi_paquete"]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+
+# ---------- mypy ----------
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+pretty = true
+files = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_decorators = false
+
+# ---------- pytest ----------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config"
+markers = [
+  "integration: requiere servicios externos (Docker); excluir con -m 'not integration'",
+]
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", "@overload"]

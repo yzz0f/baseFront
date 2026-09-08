@@ -1,0 +1,70 @@
+# golangci-lint v1.6x
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck        # errores sin revisar
+    - govet
+    - staticcheck
+    - unused
+    - ineffassign
+    - gosimple
+    - gofmt
+    - goimports
+    - misspell
+    - revive          # reemplazo de golint
+    - gosec           # seguridad
+    - errorlint       # errors.Is/As, %w
+    - wrapcheck       # errores de otros paquetes envueltos
+    - nilerr
+    - bodyclose
+    - noctx           # requests HTTP sin context
+    - contextcheck
+    - exhaustive      # switch exhaustivo sobre enums
+    - gocritic
+    - unconvert
+    - unparam
+    - prealloc
+    - nolintlint      # //nolint debe indicar linter y motivo
+    - testifylint
+    - tparallel
+    - thelper
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  revive:
+    rules:
+      - name: exported
+        arguments: [checkPrivateReceivers, disableStutteringCheck]
+      - name: var-naming
+      - name: error-strings
+      - name: context-as-argument
+      - name: unhandled-error
+        arguments: ["fmt.Print.*", "fmt.Fprint.*"]
+  nolintlint:
+    require-explanation: true
+    require-specific: true
+  gocritic:
+    enabled-tags: [diagnostic, performance, style]
+    disabled-checks: [hugeParam, unnamedResult]
+  wrapcheck:
+    ignoreSigs:
+      - .Errorf(
+      - errors.New(
+      - errors.Join(
+      - .Wrap(
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    - path: _test\.go
+      linters: [gosec, wrapcheck, unparam]
+    - path: cmd/
+      linters: [wrapcheck]
+  max-issues-per-linter: 0
+  max-same-issues: 0

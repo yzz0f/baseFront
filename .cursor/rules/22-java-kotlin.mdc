@@ -1,0 +1,21 @@
+---
+description: Convenciones para Java y Kotlin (JVM).
+globs: ["**/*.java", "**/*.kt", "**/*.kts", "**/pom.xml", "**/build.gradle", "**/build.gradle.kts"]
+alwaysApply: false
+---
+
+# Java / Kotlin
+
+Lineamiento completo: `docs/lineamientos/lenguajes/java-kotlin.md`. Config base: `templates/java/`.
+
+- Java 21 LTS (o Kotlin 2.x) salvo restricción del proyecto. Sin APIs deprecadas en código nuevo.
+- Formato con **Spotless** (google-java-format para Java, ktlint para Kotlin) integrado en el build: `./gradlew spotlessApply` / `mvn spotless:apply`.
+- Un tipo público por archivo; paquete `com.<org>.<producto>.<modulo>` por capa funcional, no técnica (`orders.domain`, `orders.api`, no `controllers/`, `services/`).
+- Inmutabilidad por defecto: `record` / `data class`, `final`, `val`, colecciones inmutables (`List.of`, `listOf`).
+- Inyección por constructor; nada de `@Autowired` en campos ni `new` de dependencias dentro de servicios.
+- `Optional` sólo como tipo de retorno; nunca en campos ni parámetros. En Kotlin, tipos nullables explícitos y sin `!!`.
+- Excepciones: unchecked propias con contexto; no atrapar `Exception`/`Throwable` genérico salvo en el borde (handler global). Nunca `catch` vacío.
+- Streams/secuencias para transformar colecciones; loops si mejora la legibilidad. Sin side effects en `map`.
+- Logging con SLF4J y placeholders (`log.info("order {} created", id)`), nunca concatenación ni `System.out`.
+- Tests: JUnit 5 + AssertJ (+ MockK en Kotlin, Mockito en Java). Nombres `should_<resultado>_when_<condicion>` o backticks en Kotlin. Testcontainers para integración.
+- Dependencias declaradas con versión fija en el catálogo (`libs.versions.toml` / BOM). Sin `+` ni rangos.

@@ -1,0 +1,22 @@
+---
+description: Convenciones para TypeScript y JavaScript (frontend y Node).
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.cjs"]
+alwaysApply: false
+---
+
+# TypeScript / JavaScript
+
+Lineamiento completo: `docs/lineamientos/lenguajes/typescript.md`. Config base: `templates/typescript/`.
+
+- TypeScript `strict: true`. Prohibido `any` explícito; usá `unknown` y estrechá. Nada de `as any` ni `!` salvo comentario justificado.
+- Preferí `type` para formas de datos y `interface` para contratos extensibles. Exportá tipos junto al código que los usa.
+- Módulos ESM. Imports absolutos vía alias (`@/`) cuando el repo lo configura; orden: node → externos → internos → relativos.
+- Funciones puras y pequeñas; evitá clases salvo que el framework lo requiera.
+- Async: siempre `async/await`, nunca `.then()` encadenado ni promesas sin `await` ni sin manejo (`no-floating-promises`).
+- Errores: lanzá `Error` (o subclases) con mensaje; no strings. Usá `cause` para encadenar.
+- Nombres: `camelCase` variables/funciones, `PascalCase` tipos/componentes, `UPPER_SNAKE` constantes globales. Archivos `kebab-case.ts`; componentes React `PascalCase.tsx`.
+- React: componentes funcionales, hooks, sin lógica de negocio en el componente (extraer a hooks/servicios). Props tipadas, sin `React.FC`.
+- Sin `console.log` en código de producción; usar el logger del proyecto.
+- Tests con el runner del repo (Vitest/Jest). Un archivo `*.test.ts` junto al código. Testing Library para UI: probá comportamiento, no implementación.
+- Dependencias: `npm ci`/`pnpm install --frozen-lockfile`. No agregar librerías para lo que ya hace la plataforma (`fetch`, `structuredClone`, `Intl`).
+- Formato: Prettier. Lint: ESLint flat config con `typescript-eslint` recommended-type-checked.

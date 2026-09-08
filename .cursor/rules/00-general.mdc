@@ -1,0 +1,39 @@
+---
+description: Reglas generales del equipo. Aplican a todo el código de cualquier lenguaje.
+globs:
+alwaysApply: true
+---
+
+# Reglas generales del equipo
+
+Leé `AGENTS.md` en la raíz: es el contrato completo. Este archivo lo resume para que esté siempre en contexto.
+
+## Principios
+- Claridad sobre ingenio. El código se lee muchas más veces de las que se escribe.
+- Cambios pequeños y enfocados. Un PR = una intención.
+- Respetá las convenciones del repositorio actual aunque difieran de tus hábitos.
+- Nada de código muerto, TODOs sin ticket ni comentarios que expliquen lo obvio.
+
+## Al generar código
+- Antes de proponer, leé el módulo afectado y sus tests. Usá las librerías que el repo ya tiene.
+- Nombres descriptivos en inglés para identificadores; comentarios y docs en el idioma del repo (por defecto español).
+- Funciones cortas, una responsabilidad. Evitá parámetros booleanos que cambian comportamiento.
+- Manejo de errores explícito. Nunca `catch` vacío, `except: pass` ni `_ = err`.
+- Validá entradas en los bordes del sistema (HTTP, CLI, colas, archivos), no en cada función interna.
+- Logs estructurados con contexto, sin datos personales ni secretos.
+- Configuración por variables de entorno; documentar en `.env.example`.
+
+## Tests
+- Todo comportamiento nuevo o corregido lleva test. Priorizá unitarios rápidos; integración para bordes.
+- Nombrá los tests por comportamiento: `debería_rechazar_email_invalido`, `returns_404_when_missing`.
+- No borres ni marques como skip tests que fallan. Arreglá la causa.
+
+## Herramientas
+- El formato y el lint los definen `pre-commit` y la CI. No agregues supresiones (`eslint-disable`, `noqa`, `nolint`, `#pragma warning disable`) sin un comentario que justifique.
+- No edites archivos generados ni lockfiles a mano.
+- Antes de dar por terminada una tarea ejecutá `./scripts/check.sh` (o el equivalente del repo) y reportá el resultado real.
+
+## Git
+- Ramas: `feat/TICKET-descripcion`, `fix/...`, `chore/...`, `docs/...`, `refactor/...`.
+- Commits en Conventional Commits: `tipo(scope): descripción en imperativo`.
+- Nunca `push --force` a ramas compartidas.

@@ -1,0 +1,21 @@
+---
+description: Reglas de seguridad al escribir código que maneja entrada externa, credenciales, datos personales o dependencias.
+globs:
+alwaysApply: true
+---
+
+# Seguridad
+
+Lineamiento completo: `docs/lineamientos/05-seguridad.md`.
+
+- **Secretos**: nunca en código, tests, fixtures, logs ni descripciones de PR. Variables de entorno o gestor de secretos. Si ves uno en el repo, avisá; hay que rotarlo.
+- **Entrada externa** (HTTP, CLI, archivos, colas, IA): validar tipo, tamaño y formato en el borde. Rechazar por defecto; listas blancas sobre listas negras.
+- **Inyección**: consultas parametrizadas siempre (SQL, NoSQL, LDAP, comandos de shell). Nunca construir queries ni comandos concatenando strings con entrada de usuario.
+- **Salida**: escapar según el contexto (HTML, atributos, URL, JSON). En frontend usar el binding del framework; sin `innerHTML`/`dangerouslySetInnerHTML` con datos externos.
+- **Autenticación y autorización**: verificar permisos en el servidor por recurso, no sólo por rol. Nunca confiar en flags del cliente.
+- **Criptografía**: usar librerías estándar (no implementaciones propias). Hash de contraseñas con Argon2id/bcrypt. Comparaciones de tokens en tiempo constante. Nada de MD5/SHA1 para seguridad.
+- **Datos personales**: minimizar, no loguear, cifrar en reposo si es sensible. Enmascarar en logs y respuestas de error.
+- **Dependencias**: versiones fijas, lockfile commiteado, sin paquetes sin mantenimiento ni con licencias incompatibles. Dependabot resuelve actualizaciones; no ignorar sus alertas.
+- **Errores**: mensajes genéricos al usuario, detalle en logs. Nunca stack traces ni rutas internas en respuestas HTTP.
+- **Archivos y rutas**: normalizar y validar contra el directorio permitido (path traversal). Límite de tamaño en uploads.
+- **Deserialización**: nunca deserializar objetos arbitrarios de origen externo (`pickle`, `ObjectInputStream`, `BinaryFormatter`).
