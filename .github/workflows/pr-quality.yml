@@ -14,7 +14,7 @@ jobs:
     name: Título en Conventional Commits
     runs-on: ubuntu-latest
     steps:
-      - uses: amannn/action-semantic-pull-request@v5
+      - uses: amannn/action-semantic-pull-request@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -43,7 +43,7 @@ jobs:
       WARN_LINES: '400'
       MAX_LINES: '1500'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Contar líneas cambiadas (sin lockfiles ni generados)

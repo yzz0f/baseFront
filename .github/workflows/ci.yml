@@ -30,7 +30,7 @@ jobs:
       java: ${{ steps.d.outputs.java }}
       dotnet: ${{ steps.d.outputs.dotnet }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: d
         shell: bash
         run: |
@@ -47,8 +47,8 @@ jobs:
     name: pre-commit (genéricos)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - uses: pre-commit/action@v3.0.1
@@ -64,7 +64,7 @@ jobs:
     if: needs.detect.outputs.node == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Detectar gestor de paquetes
         id: pm
         shell: bash
@@ -73,8 +73,8 @@ jobs:
           elif [ -f yarn.lock ]; then echo "name=yarn" >> "$GITHUB_OUTPUT"; echo "install=yarn install --immutable" >> "$GITHUB_OUTPUT"
           else echo "name=npm" >> "$GITHUB_OUTPUT"; echo "install=npm ci" >> "$GITHUB_OUTPUT"; fi
       - if: steps.pm.outputs.name == 'pnpm'
-        uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+        uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: ${{ hashFiles('.nvmrc') != '' && '.nvmrc' || 'package.json' }}
           cache: ${{ steps.pm.outputs.name }}
@@ -95,11 +95,11 @@ jobs:
     if: needs.detect.outputs.python == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version-file: ${{ hashFiles('.python-version') != '' && '.python-version' || 'pyproject.toml' }}
       - name: Instalar dependencias
@@ -127,14 +127,14 @@ jobs:
     if: needs.detect.outputs.go == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
       - name: Formato (gofmt)
         run: test -z "$(gofmt -l . | tee /dev/stderr)"
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v9
         with:
           version: v1.62
       - run: go vet ./...
@@ -146,8 +146,8 @@ jobs:
     if: needs.detect.outputs.java == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
@@ -165,8 +165,8 @@ jobs:
     if: needs.detect.outputs.dotnet == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           # Si el repo tiene global.json, setup-dotnet lo respeta automáticamente.
           dotnet-version: '8.0.x'
